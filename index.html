@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BB · Posed Variations Creator</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" type="image/png" href="logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #000000;
+      --bg-card: #000000;
+      --bg-input: #121212;
+      --silver-1: #e8e8e8;
+      --silver-2: #b8b8b8;
+      --silver-3: #7a7a7a;
+      --border: #2a2a2a;
+      --border-focus: #5a5a5a;
+      --accent: linear-gradient(135deg, #e8e8e8 0%, #9a9a9a 50%, #d0d0d0 100%);
+      --accent-hover: linear-gradient(135deg, #f5f5f5 0%, #b0b0b0 50%, #e8e8e8 100%);
+      --error: #e06b6b;
+    }
+
+    html, body {
+      background: var(--bg);
+      color: var(--silver-1);
+      font-family: 'Inter', -apple-system, sans-serif;
+      font-weight: 400;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      letter-spacing: 0.01em;
+    }
+
+    body {
+      background: #000000;
+      padding: 48px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 520px;
+      text-align: center;
+    }
+
+    .logo {
+      width: 160px;
+      height: auto;
+      margin: 0 auto 28px;
+      display: block;
+      filter: drop-shadow(0 4px 24px rgba(255, 255, 255, 0.1));
+    }
+
+    h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 42px;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      background: linear-gradient(180deg, #ffffff 0%, #c5c5c5 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 12px;
+    }
+
+    .subtitle {
+      color: var(--silver-3);
+      font-size: 15px;
+      font-weight: 300;
+      line-height: 1.6;
+      margin-bottom: 48px;
+      padding: 0 10px;
+    }
+
+    .card {
+      background: #000000;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 40px 36px;
+      text-align: left;
+      position: relative;
+    }
+
+    .field {
+      margin-bottom: 24px;
+    }
+
+    .field:last-of-type {
+      margin-bottom: 32px;
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--silver-2);
+      margin-bottom: 10px;
+    }
+
+    label .required {
+      color: var(--silver-1);
+      margin-left: 4px;
+    }
+
+    input[type="text"],
+    .file-label {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 16px;
+      color: var(--silver-1);
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      font-weight: 400;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    input[type="text"]:focus {
+      outline: none;
+      border-color: var(--border-focus);
+      background: #222;
+    }
+
+    input[type="text"]::placeholder {
+      color: var(--silver-3);
+      font-weight: 300;
+    }
+
+    .file-wrap {
+      position: relative;
+    }
+
+    input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      z-index: 2;
+    }
+
+    .file-label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      min-height: 48px;
+    }
+
+    .file-label:hover {
+      border-color: var(--border-focus);
+    }
+
+    .file-placeholder {
+      color: var(--silver-3);
+      font-weight: 300;
+    }
+
+    .file-chosen {
+      color: var(--silver-1);
+      font-weight: 400;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 70%;
+    }
+
+    .file-button {
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--silver-2);
+      padding: 4px 10px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    button[type="submit"] {
+      width: 100%;
+      background: var(--accent);
+      color: #0a0a0a;
+      border: none;
+      border-radius: 8px;
+      padding: 16px 24px;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    button[type="submit"]:hover:not(:disabled) {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 8px 24px rgba(255, 255, 255, 0.1);
+    }
+
+    button[type="submit"]:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    button[type="submit"]:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .state { display: none; }
+    .state.active { display: block; }
+
+    .state-message {
+      text-align: center;
+      padding: 32px 20px;
+    }
+
+    .state-message h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 28px;
+      font-weight: 500;
+      color: var(--silver-1);
+      margin-bottom: 14px;
+      letter-spacing: 0.01em;
+    }
+
+    .state-message p {
+      color: var(--silver-2);
+      font-size: 15px;
+      font-weight: 300;
+      line-height: 1.7;
+      margin-bottom: 24px;
+    }
+
+    .state-message .highlight {
+      color: var(--silver-1);
+      font-weight: 500;
+    }
+
+    .spinner {
+      width: 48px;
+      height: 48px;
+      margin: 0 auto 28px;
+      border: 2px solid var(--border);
+      border-top-color: var(--silver-1);
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .check-icon {
+      width: 56px;
+      height: 56px;
+      margin: 0 auto 24px;
+      border-radius: 50%;
+      background: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 24px rgba(255, 255, 255, 0.1);
+    }
+
+    .check-icon svg {
+      width: 28px;
+      height: 28px;
+      stroke: #0a0a0a;
+      stroke-width: 3;
+      fill: none;
+    }
+
+    button.reset {
+      margin-top: 20px;
+      background: transparent;
+      color: var(--silver-2);
+      border: 1px solid var(--border);
+      padding: 10px 20px;
+      border-radius: 6px;
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    button.reset:hover {
+      border-color: var(--border-focus);
+      color: var(--silver-1);
+    }
+
+    .error-banner {
+      background: rgba(224, 107, 107, 0.1);
+      border: 1px solid rgba(224, 107, 107, 0.3);
+      color: var(--error);
+      padding: 12px 16px;
+      border-radius: 6px;
+      font-size: 13px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .error-banner.active { display: block; }
+
+    footer {
+      margin-top: 48px;
+      color: var(--silver-3);
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      font-weight: 300;
+      text-align: center;
+    }
+
+    @media (max-width: 560px) {
+      body { padding: 32px 16px; }
+      h1 { font-size: 32px; }
+      .logo { width: 110px; height: 110px; }
+      .card { padding: 28px 22px; }
+      .subtitle { margin-bottom: 32px; font-size: 14px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <img src="logo.png" alt="BB Enterprises" class="logo" />
+
+    <h1>Posed Variations Creator</h1>
+    <p class="subtitle">
+      Upload a winning creative. Get 4 new pose variations delivered straight to the All Creatives folder in Google Drive.
+    </p>
+
+    <div class="card">
+      <div class="error-banner" id="errorBanner"></div>
+
+      <!-- FORM STATE -->
+      <div class="state active" id="formState">
+        <form id="poseForm">
+          <div class="field">
+            <label for="creativeImage">Creative Image <span class="required">*</span></label>
+            <div class="file-wrap">
+              <input type="file" id="creativeImage" name="field-0" accept=".jpg,.jpeg,.png,.webp" required />
+              <div class="file-label">
+                <span class="file-placeholder" id="fileLabel">Choose an image</span>
+                <span class="file-button">Browse</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="productName">Product Name <span class="required">*</span></label>
+            <input type="text" id="productName" name="field-1" placeholder="e.g., Luna, Zamma, Avery" required />
+          </div>
+
+          <div class="field">
+            <label for="color">Color <span class="required">*</span></label>
+            <input type="text" id="color" name="field-2" placeholder="e.g., Red, Beige, Dark Grey" required />
+          </div>
+
+          <button type="submit" id="submitBtn">Generate Pose Variations</button>
+        </form>
+      </div>
+
+      <!-- LOADING STATE -->
+      <div class="state" id="loadingState">
+        <div class="state-message">
+          <div class="spinner"></div>
+          <h2>Processing</h2>
+          <p>Generating 4 pose variations.<br />This takes about 90 seconds.</p>
+        </div>
+      </div>
+
+      <!-- SUCCESS STATE -->
+      <div class="state" id="successState">
+        <div class="state-message">
+          <div class="check-icon">
+            <svg viewBox="0 0 24 24"><polyline points="4 12 10 18 20 6" stroke-linecap="round" stroke-linejoin="round" /></svg>
+          </div>
+          <h2>Alterations Complete</h2>
+          <p>
+            The alterations for <span class="highlight" id="successProduct">your product</span> will be ready in the <span class="highlight">All Creatives</span> folder within ~90 seconds.
+          </p>
+          <button type="button" class="reset" id="resetBtn">Generate Another</button>
+        </div>
+      </div>
+    </div>
+
+    <footer>B.B. Enterprises · Private Internal Tool</footer>
+  </div>
+
+  <script>
+    const N8N_URL = 'https://bb-boutique-enterprises.app.n8n.cloud/form/b.b.pose.alterations';
+
+    const form = document.getElementById('poseForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const fileInput = document.getElementById('creativeImage');
+    const fileLabel = document.getElementById('fileLabel');
+    const errorBanner = document.getElementById('errorBanner');
+
+    const formState = document.getElementById('formState');
+    const loadingState = document.getElementById('loadingState');
+    const successState = document.getElementById('successState');
+    const successProduct = document.getElementById('successProduct');
+
+    fileInput.addEventListener('change', () => {
+      const name = fileInput.files[0]?.name || 'Choose an image';
+      fileLabel.textContent = name;
+      fileLabel.className = fileInput.files[0] ? 'file-chosen' : 'file-placeholder';
+    });
+
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      form.reset();
+      fileLabel.textContent = 'Choose an image';
+      fileLabel.className = 'file-placeholder';
+      setState('form');
+    });
+
+    function setState(state) {
+      formState.classList.toggle('active', state === 'form');
+      loadingState.classList.toggle('active', state === 'loading');
+      successState.classList.toggle('active', state === 'success');
+    }
+
+    function showError(msg) {
+      errorBanner.textContent = msg;
+      errorBanner.classList.add('active');
+      setTimeout(() => errorBanner.classList.remove('active'), 6000);
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorBanner.classList.remove('active');
+
+      const product = document.getElementById('productName').value.trim();
+      const color = document.getElementById('color').value.trim();
+      const file = fileInput.files[0];
+
+      if (!product || !color || !file) {
+        showError('Please fill in all fields.');
+        return;
+      }
+
+      submitBtn.disabled = true;
+      successProduct.textContent = product;
+      setState('loading');
+
+      const formData = new FormData();
+      formData.append('field-0', file);
+      formData.append('field-1', product);
+      formData.append('field-2', color);
+
+      try {
+        await fetch(N8N_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          body: formData,
+        });
+        setState('success');
+      } catch (err) {
+        console.error('Submit error:', err);
+        setState('form');
+        showError('Something went wrong. Please try again.');
+      } finally {
+        submitBtn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
