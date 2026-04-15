@@ -676,34 +676,46 @@
         el.querySelector('.state-text').textContent = text;
       };
 
-      // Stagger submissions by 700ms each so the browser doesn't drop any
-      const promises = rows.map((r, i) => new Promise(async (resolve) => {
-        await new Promise(r => setTimeout(r, i * 700));
-        setRowStatus(i, 'processing', 'Processing');
+      // Submit SEQUENTIALLY — one at a time — so browser never drops any.
+      // Track which specific rows succeed/fail so we can tell the user.
+      const succeeded = [];
+      const failed = [];
+
+      for (let i = 0; i < rows.length; i++) {
+        const r = rows[i];
+        setRowStatus(i, 'processing', 'Submitting');
         try {
           await submitRow(r);
           setRowStatus(i, 'done', 'Submitted');
-          resolve({ ok: true });
+          succeeded.push(`${r.name} (${r.color})`);
         } catch (err) {
           console.error('Row', i, 'error:', err);
           setRowStatus(i, 'failed', 'Failed');
-          resolve({ ok: false });
+          failed.push(`${r.name} (${r.color})`);
         }
-      }));
-
-      const results = await Promise.allSettled(promises);
-      const ok = results.filter((r) => r.value?.ok).length;
-      const failed = rows.length - ok;
+        // Small breathing pause between submissions
+        if (i < rows.length - 1) await new Promise(r => setTimeout(r, 500));
+      }
 
       submitBtn.disabled = false;
 
       setTimeout(() => {
-        successTitle.textContent = failed === 0 ? 'All Alterations Submitted' : `${ok} of ${rows.length} Submitted`;
-        successText.textContent = failed === 0
-          ? 'Check the All Creatives folder in about 90 seconds for each product.'
-          : `${ok} submitted successfully. ${failed} failed — close this tab or try again.`;
+        const total = rows.length;
+        const ok = succeeded.length;
+        const nFailed = failed.length;
+
+        if (nFailed === 0) {
+          successTitle.textContent = 'All Alterations Submitted';
+          successText.innerHTML = `Check the All Creatives folder in about 90 seconds.<br/><br/><strong>Submitted:</strong> ${succeeded.join(', ')}`;
+        } else if (ok === 0) {
+          successTitle.textContent = 'All Submissions Failed';
+          successText.innerHTML = `<strong>Failed:</strong> ${failed.join(', ')}<br/><br/>Try again.`;
+        } else {
+          successTitle.textContent = `${ok} of ${total} Submitted`;
+          successText.innerHTML = `<strong>Submitted:</strong> ${succeeded.join(', ')}<br/><br/><strong>Failed:</strong> ${failed.join(', ')}<br/><br/>Resubmit the failed ones.`;
+        }
         setState('success');
-      }, 800);
+      }, 500);
     });
 
     function escapeHtml(str) {
