@@ -676,18 +676,20 @@
         el.querySelector('.state-text').textContent = text;
       };
 
-      const promises = rows.map(async (r, i) => {
+      // Stagger submissions by 700ms each so the browser doesn't drop any
+      const promises = rows.map((r, i) => new Promise(async (resolve) => {
+        await new Promise(r => setTimeout(r, i * 700));
         setRowStatus(i, 'processing', 'Processing');
         try {
           await submitRow(r);
           setRowStatus(i, 'done', 'Submitted');
-          return { ok: true };
+          resolve({ ok: true });
         } catch (err) {
           console.error('Row', i, 'error:', err);
           setRowStatus(i, 'failed', 'Failed');
-          return { ok: false };
+          resolve({ ok: false });
         }
-      });
+      }));
 
       const results = await Promise.allSettled(promises);
       const ok = results.filter((r) => r.value?.ok).length;
