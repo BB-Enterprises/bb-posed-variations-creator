@@ -446,6 +446,142 @@
       text-align: center;
     }
 
+    .log-section {
+      margin-top: 32px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .log-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      cursor: pointer;
+      background: rgba(255, 255, 255, 0.015);
+      user-select: none;
+      transition: background 0.15s;
+    }
+
+    .log-header:hover {
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .log-header-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .log-title {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--silver-2);
+    }
+
+    .log-count {
+      font-size: 11px;
+      color: var(--silver-3);
+      font-weight: 400;
+    }
+
+    .log-chevron {
+      color: var(--silver-3);
+      font-size: 14px;
+      transition: transform 0.2s;
+    }
+
+    .log-section.open .log-chevron {
+      transform: rotate(180deg);
+    }
+
+    .log-body {
+      display: none;
+      border-top: 1px solid var(--border);
+    }
+
+    .log-section.open .log-body {
+      display: block;
+    }
+
+    .log-empty {
+      padding: 28px 20px;
+      text-align: center;
+      color: var(--silver-3);
+      font-size: 13px;
+      font-weight: 300;
+    }
+
+    .log-stats {
+      display: flex;
+      gap: 20px;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .log-stat {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .log-stat-value {
+      font-size: 22px;
+      font-weight: 500;
+      color: var(--silver-1);
+      font-family: 'Playfair Display', serif;
+    }
+
+    .log-stat-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--silver-3);
+      font-weight: 500;
+    }
+
+    .log-table-wrap {
+      max-height: 320px;
+      overflow-y: auto;
+    }
+
+    .log-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .log-table th {
+      position: sticky;
+      top: 0;
+      background: #0a0a0a;
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--silver-3);
+      padding: 10px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .log-table td {
+      font-size: 13px;
+      color: var(--silver-2);
+      padding: 10px 16px;
+      border-bottom: 1px solid rgba(42, 42, 42, 0.5);
+    }
+
+    .log-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .log-table .status-ok { color: var(--success); }
+    .log-table .status-fail { color: var(--error); }
+
+
     @media (max-width: 560px) {
       body { padding: 24px 14px; }
       h1 { font-size: 28px; }
@@ -509,6 +645,25 @@
           <h2 id="successTitle">All Alterations Submitted</h2>
           <p id="successText">Check the All Creatives folder in ~90 seconds for each product.</p>
           <button type="button" class="reset-btn" id="resetBtn">Generate More</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="log-section" id="logSection">
+      <div class="log-header" id="logToggle">
+        <div class="log-header-left">
+          <span class="log-title">Generation Log</span>
+          <span class="log-count" id="logCount"></span>
+        </div>
+        <span class="log-chevron">▼</span>
+      </div>
+      <div class="log-body" id="logBody">
+        <div class="log-stats" id="logStats"></div>
+        <div class="log-table-wrap">
+          <table class="log-table">
+            <thead><tr><th>Date</th><th>Product</th><th>Color</th><th>Images</th><th>Status</th></tr></thead>
+            <tbody id="logTableBody"></tbody>
+          </table>
         </div>
       </div>
     </div>
@@ -739,6 +894,13 @@
 
       submitBtn.disabled = false;
 
+      const logItems = rows.map((r, i) => ({
+        name: r.name,
+        color: r.color,
+        status: succeeded.includes(`${r.name} (${r.color})`) ? 'submitted' : 'failed',
+      }));
+      addLogEntries(logItems);
+
       setTimeout(() => {
         const total = rows.length;
         const ok = succeeded.length;
@@ -763,6 +925,81 @@
       div.textContent = str;
       return div.innerHTML;
     }
+
+    // --- Generation Log ---
+    const LOG_KEY = 'bb_pose_log';
+    const logSection = document.getElementById('logSection');
+    const logToggle = document.getElementById('logToggle');
+    const logBody = document.getElementById('logBody');
+    const logCount = document.getElementById('logCount');
+    const logStats = document.getElementById('logStats');
+    const logTableBody = document.getElementById('logTableBody');
+    function getLog() {
+      try { return JSON.parse(localStorage.getItem(LOG_KEY) || '[]'); }
+      catch { return []; }
+    }
+
+    function saveLog(entries) {
+      localStorage.setItem(LOG_KEY, JSON.stringify(entries));
+    }
+
+    function addLogEntries(items) {
+      const log = getLog();
+      const now = new Date().toISOString();
+      items.forEach(item => {
+        log.unshift({
+          date: now,
+          product: item.name,
+          color: item.color,
+          images: 4,
+          status: item.status,
+        });
+      });
+      saveLog(log);
+      renderLog();
+    }
+
+    function renderLog() {
+      const log = getLog();
+      const total = log.length;
+      const totalImages = log.reduce((sum, e) => sum + (e.status === 'submitted' ? e.images : 0), 0);
+      const uniqueProducts = new Set(log.filter(e => e.status === 'submitted').map(e => e.product.toLowerCase())).size;
+
+      logCount.textContent = total === 0 ? '' : `${total} ${total === 1 ? 'entry' : 'entries'}`;
+
+      if (total === 0) {
+        logStats.style.display = 'none';
+        logTableBody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--silver-3);font-weight:300;padding:28px 16px;">No generations yet</td></tr>';
+        return;
+      }
+
+      logStats.style.display = 'flex';
+      logStats.innerHTML = `
+        <div class="log-stat"><span class="log-stat-value">${totalImages}</span><span class="log-stat-label">Images Generated</span></div>
+        <div class="log-stat"><span class="log-stat-value">${uniqueProducts}</span><span class="log-stat-label">Unique Products</span></div>
+        <div class="log-stat"><span class="log-stat-value">${total}</span><span class="log-stat-label">Total Submissions</span></div>
+      `;
+
+      logTableBody.innerHTML = log.map(e => {
+        const d = new Date(e.date);
+        const dateStr = d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+        const statusClass = e.status === 'submitted' ? 'status-ok' : 'status-fail';
+        const statusLabel = e.status === 'submitted' ? 'Submitted' : 'Failed';
+        return `<tr>
+          <td>${escapeHtml(dateStr)}</td>
+          <td>${escapeHtml(e.product)}</td>
+          <td>${escapeHtml(e.color)}</td>
+          <td>${e.status === 'submitted' ? e.images : '—'}</td>
+          <td class="${statusClass}">${statusLabel}</td>
+        </tr>`;
+      }).join('');
+    }
+
+    logToggle.addEventListener('click', () => {
+      logSection.classList.toggle('open');
+    });
+
+    renderLog();
 
     // Initialize with one empty row
     createRow();
