@@ -702,6 +702,32 @@
 
     const N8N_URL = 'https://bb-boutique-enterprises.app.n8n.cloud/form/b.b.pose.alterations';
     const MAX_ROWS = 5;
+    const MAX_IMAGE_DIM = 2048;
+
+    // Resize large images before upload to prevent n8n cloud OOM crashes
+    async function resizeImage(file) {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+          URL.revokeObjectURL(img.src);
+          const { width, height } = img;
+          if (width <= MAX_IMAGE_DIM && height <= MAX_IMAGE_DIM) {
+            resolve(file);
+            return;
+          }
+          const scale = MAX_IMAGE_DIM / Math.max(width, height);
+          const canvas = document.createElement('canvas');
+          canvas.width = Math.round(width * scale);
+          canvas.height = Math.round(height * scale);
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          canvas.toBlob((blob) => {
+            resolve(new File([blob], file.name.replace(/\.\w+$/, '.jpg'), { type: 'image/jpeg' }));
+          }, 'image/jpeg', 0.92);
+        };
+        img.src = URL.createObjectURL(file);
+      });
+    }
 
     const rowsContainer = document.getElementById('rows');
     const addRowBtn = document.getElementById('addRowBtn');
@@ -834,8 +860,9 @@
     }
 
     async function submitRow(row) {
+      const resized = await resizeImage(row.file);
       const formData = new FormData();
-      formData.append('field-0', row.file);
+      formData.append('field-0', resized);
       formData.append('field-1', row.name);
       formData.append('field-2', row.color);
       await fetch(N8N_URL, { method: 'POST', mode: 'no-cors', body: formData });
